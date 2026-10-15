@@ -3,22 +3,23 @@ import logging
 
 
 def format_extinf(channel_id, tvg_id, tvg_chno, tvg_name, tvg_logo, group_title, display_name):
-    """Formats the #EXTINF line."""
+    """Formats the #EXTINF line with categories set to 'Fast Roku'."""
     # Ensure tvg_chno is empty if None or invalid
     chno_str = str(tvg_chno) if tvg_chno is not None and str(tvg_chno).isdigit() else ""
 
     # Basic sanitization for names/titles within the M3U format
     sanitized_tvg_name = tvg_name.replace("\"", "")
-    sanitized_group_title = group_title.replace("\"", "")
+    sanitized_group_title = "Fast Roku"  # Forced category name for all channels
+    sanitized_logo = tvg_logo.replace("\"", "")
     sanitized_display_name = display_name.replace(",", "")  # Commas break the EXTINF line itself
 
     return (f"#EXTINF:-1 "
             f"channel-id=\"{channel_id}\" "
             f"tvg-id=\"{tvg_id}\" "
-            f"tvg-chno=\"\" "
-            f"tvg-name=\"\" "
-            f"tvg-logo=\"\" "
-            f"group-title=\"\","
+            f"tvg-chno=\"{chno_str}\" "
+            f"tvg-name=\"{sanitized_tvg_name}\" "
+            f"tvg-logo=\"{sanitized_logo}\" "
+            f"group-title=\"{sanitized_group_title}\","
             f"{sanitized_display_name}\n")
 
 
@@ -114,8 +115,7 @@ def get_roku_stream_enhanced(channel_id):
 
 
 def fetch_url(url, is_json=True, is_gzipped=False):
-    """Fetches URL content (placeholder implementation)."""
-    # You'll need to implement this function based on your needs
+    """Fetches URL content."""
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -128,8 +128,7 @@ def fetch_url(url, is_json=True, is_gzipped=False):
 
 
 def write_m3u_file(filename, content):
-    """Writes M3U content to file (placeholder implementation)."""
-    # You'll need to implement this function based on your needs
+    """Writes M3U content to file."""
     try:
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(content)
@@ -170,9 +169,10 @@ def generate_roku_playlist(sort="chno"):
         chno = channel.get("chno")
         name = channel.get("name", "Unknown Channel")
         logo = channel.get("logo", "")
-        groups_list = channel.get("groups", [])
-        group_title = groups_list[0] if groups_list else "Uncategorized"
-        tvg_id = channel_id  # Roku IDs seem unique enough
+        
+        # Set all categories to "Fast Roku"
+        group_title = "Fast Roku"
+        tvg_id = channel_id
 
         extinf = format_extinf(channel_id, tvg_id, chno, name, logo, group_title, name)
         stream_url = get_roku_stream_enhanced(channel_id)
